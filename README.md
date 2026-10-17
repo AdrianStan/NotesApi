@@ -1,5 +1,7 @@
 # Notes API
 
+![CI](https://github.com/AdrianStan/NotesApi/actions/workflows/ci.yml/badge.svg)
+
 REST backend for a note-taking service shared by small teams. Users belong to one or more teams and can create, search, edit and delete their teams' notes.
 
 Built with ASP.NET Core (.NET 10), EF Core and SQLite.
@@ -15,6 +17,7 @@ dotnet run --project NotesApi
 - The SQLite database (`notes.db`) is created and seeded on first run. No setup needed.
 - API: http://localhost:5297
 - Swagger UI: http://localhost:5297/swagger
+- Health check: http://localhost:5297/health
 - `NotesApi/NotesApi.http` has ready-made requests for every endpoint and error case. Open it in Visual Studio, VS Code (REST Client) or Rider and send them one by one.
 
 ## Run the tests
@@ -23,7 +26,7 @@ dotnet run --project NotesApi
 dotnet test
 ```
 
-9 integration tests (xUnit and WebApplicationFactory) start the API in memory against a temporary SQLite database and call it over HTTP.
+10 integration tests (xUnit and WebApplicationFactory) start the API in memory against a temporary SQLite database and call it over HTTP. GitHub Actions builds the project and runs the tests on every push.
 
 ## Identifying the caller
 
@@ -53,6 +56,7 @@ Teams: Development (1), Operations (2), Testing (3). One note is seeded in Devel
 | GET | `/api/notes/{id}` | One note | 200 | 401, 403, 404 |
 | PUT | `/api/notes/{id}` | Update title and content. The body must include the note's current `version` | 200 | 400, 401, 403, 404, 409 |
 | DELETE | `/api/notes/{id}` | Delete a note | 204 | 401, 403, 404 |
+| GET | `/health` | Health check | 200 | |
 
 Errors use the standard ProblemDetails format.
 
@@ -94,6 +98,7 @@ This is optimistic concurrency. Locking a note while someone edits it (pessimist
 - **Service layer.** Business rules live in `NotesService` behind `INotesService`, and controllers only map HTTP to the service. Rules stay in one place and are easy to test. This is also the interface and service pattern I use daily in production .NET applications.
 - **DTOs.** Requests accept only what the caller is allowed to set (title, content, version). Author, team, dates and `IsActive` are set by the API, so they cannot be faked. Responses never expose the database entities.
 - **Centralized error handling.** One exception handler maps not found, forbidden, conflict and unauthorized errors to status codes in ProblemDetails format. Unexpected errors return a generic 500 and are logged with full details on the server only. The alternative is a `Result<T>` pattern instead of exceptions; for an API this size, exceptions keep the code simpler.
+- **CI and health check.** GitHub Actions builds and tests every push on a clean Linux machine, which also proves the project runs outside my own environment. `/health` lets a load balancer or monitoring tool check that the app is up.
 
 ## With more time
 
@@ -103,7 +108,6 @@ This is optimistic concurrency. Locking a note while someone edits it (pessimist
 - Full-text search (SQLite FTS5 or SQL Server full-text) instead of `LIKE`, which scans every note in a team.
 - Cursor-based paging for very large teams.
 - Note history: keep previous versions instead of overwriting them.
-- A CI pipeline (GitHub Actions) running the tests on every push, a health check endpoint, and rate limiting.
+- Rate limiting, and a database check in the health endpoint.
 - Centralized structured logging (Serilog or NLog to Seq or Application Insights) with a correlation id per request.
 - Unit tests for `NotesService` alongside the integration tests.
-
