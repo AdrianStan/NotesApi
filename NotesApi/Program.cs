@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NotesApi.Data;
+using NotesApi.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,9 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddDbContext<AppDbContext>(o =>
     o.UseSqlite(builder.Configuration.GetConnectionString("Default")));
+
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 var app = builder.Build();
 
@@ -33,3 +37,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+app.UseExceptionHandler();
