@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using NotesApi.Data;
 using NotesApi.Infrastructure;
+using NotesApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +18,7 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, HeaderCurrentUser>();
-
+builder.Services.AddScoped<INotesService, NotesService>();
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
