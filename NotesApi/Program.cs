@@ -15,6 +15,9 @@ builder.Services.AddDbContext<AppDbContext>(o =>
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUser, HeaderCurrentUser>();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
