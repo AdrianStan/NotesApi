@@ -21,6 +21,7 @@ builder.Services.AddScoped<INotesService, NotesService>();
 var app = builder.Build();
 
 app.UseExceptionHandler();
+app.UseHttpsRedirection();
 
 // Create or update the database on startup so the app runs with no setup
 using (var scope = app.Services.CreateScope())
@@ -35,8 +36,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(o => o.SwaggerEndpoint("/openapi/v1.json", "v1"));
 }
 
-app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }
