@@ -18,6 +18,8 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, HeaderCurrentUser>();
 builder.Services.AddScoped<INotesService, NotesService>();
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 app.UseExceptionHandler();
@@ -38,6 +40,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthorization();
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 app.Run();
 

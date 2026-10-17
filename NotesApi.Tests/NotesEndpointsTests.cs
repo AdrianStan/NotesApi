@@ -128,7 +128,13 @@ public class NotesEndpointsTests : IClassFixture<NotesApiFactory>
         Assert.Single(page.Items);
         Assert.Contains(marker, page.Items[0].Title);
     }
+    [Fact]
+    public async Task Health_ReturnsOk()
+    {
+        var response = await _factory.CreateClient().GetAsync("/health");
 
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
     private static async Task<NoteResponse> CreateNoteAsync(HttpClient client, string title)
     {
         var response = await client.PostAsJsonAsync($"/api/teams/{Development}/notes",
