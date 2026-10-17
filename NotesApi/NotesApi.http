@@ -1,6 +1,60 @@
 @NotesApi_HostAddress = http://localhost:5297
 
-GET {{NotesApi_HostAddress}}/weatherforecast/
-Accept: application/json
+### Alice's teams
+GET {{NotesApi_HostAddress}}/api/teams
+X-User-Id: 1
 
-###
+### Development notes as Alice
+GET {{NotesApi_HostAddress}}/api/teams/1/notes
+X-User-Id: 1
+
+### Bob is not in Operations (expect 403)
+GET {{NotesApi_HostAddress}}/api/teams/2/notes
+X-User-Id: 2
+
+### No header (expect 401)
+GET {{NotesApi_HostAddress}}/api/teams/1/notes
+
+### Bob creates a note in Development (expect 201)
+POST {{NotesApi_HostAddress}}/api/teams/1/notes
+X-User-Id: 2
+Content-Type: application/json
+
+{
+  "title": "Release checklist",
+  "content": "Tag the build, run smoke tests, notify Ops."
+}
+
+### Search (expect the release note)
+GET {{NotesApi_HostAddress}}/api/teams/1/notes?search=release
+X-User-Id: 1
+
+### Update note 1 with the current version (expect 200, version becomes 2)
+PUT {{NotesApi_HostAddress}}/api/notes/1
+X-User-Id: 1
+Content-Type: application/json
+
+{
+  "title": "Sprint planning (updated)",
+  "content": "Agenda for Monday's planning session.",
+  "version": 1
+}
+
+### Same update again with the old version (expect 409)
+PUT {{NotesApi_HostAddress}}/api/notes/1
+X-User-Id: 2
+Content-Type: application/json
+
+{
+  "title": "Bob's edit",
+  "content": "Overwriting with an old copy.",
+  "version": 1
+}
+
+### Delete note 1 (expect 204)
+DELETE {{NotesApi_HostAddress}}/api/notes/1
+X-User-Id: 1
+
+### Get the deleted note (expect 404)
+GET {{NotesApi_HostAddress}}/api/notes/1
+X-User-Id: 1
